@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Framing.v0_9_1;
 
 namespace RabbitMQReprocessDeadLetter
 {
@@ -13,7 +12,7 @@ namespace RabbitMQReprocessDeadLetter
         private readonly IConnection _rabbitConnection;
         private readonly IModel _model;
         private readonly string _deadLetterQueueName;
-        private const ushort FetchSize = 1;
+        private const ushort FetchSize = 10;
         private const string ConsumerName = "DeadLettterReprocessor";
 
         public RabbitReprocessor(IConnection rabbitConnection, string deadLetterQueueName)
@@ -40,7 +39,43 @@ namespace RabbitMQReprocessDeadLetter
                 }
 
                 var e = queueingBasicConsumer.Queue.Dequeue(); // blocking call
+                var deathProperties = (List<object>) e.BasicProperties.Headers["x-death"];
+                var prop = (Dictionary<string, object>)deathProperties.Single();
+                var queueAsByteArray = (byte[])prop["queue"];
+                var queueName = queueAsByteArray.ConvertToString();
+                var data = e.Body;
+                try
+                {
+                    Console.WriteLine("{0} => {1}", queueName, data.Deserialize<long>());
+                }
+                // ReSharper disable once EmptyGeneralCatchClause
+                catch { }
+                SendMessageToQueue(queueName, data);
+                _model.BasicAck(e.DeliveryTag, false);
             }
+        }
+
+        /// <summary>
+        /// delivery the message directly into the queue from which it came.
+        /// 
+        /// You may want to put it back into an exchange instead of a queue.
+        /// </summary>
+        private void SendMessageToQueue(string queueName, byte[] messageBytes)
+        {
+            const string exchangeName = "";
+            if (string.IsNullOrEmpty(queueName))
+            {
+                throw new ArgumentNullException("queueName");
+            }
+            if (messageBytes == null)
+            {
+                throw new ArgumentNullException("messageBytes");
+            }
+            var basicProperties = new BasicProperties
+            {
+                DeliveryMode = 2//2 = durable
+            };
+            _model.BasicPublish(exchangeName, queueName, basicProperties, messageBytes);
         }
     }
 }
