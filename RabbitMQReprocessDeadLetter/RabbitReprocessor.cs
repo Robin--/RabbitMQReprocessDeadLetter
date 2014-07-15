@@ -9,7 +9,6 @@ namespace RabbitMQReprocessDeadLetter
 {
     public class RabbitReprocessor
     {
-        private readonly IConnection _rabbitConnection;
         private readonly IModel _model;
         private readonly string _deadLetterQueueName;
         private const ushort FetchSize = 10;
@@ -17,7 +16,6 @@ namespace RabbitMQReprocessDeadLetter
 
         public RabbitReprocessor(IConnection rabbitConnection, string deadLetterQueueName)
         {
-            _rabbitConnection = rabbitConnection;
             _deadLetterQueueName = deadLetterQueueName;
             _model = rabbitConnection.CreateModel();
         }

@@ -6,6 +6,7 @@ namespace Runner
 {
     class Runner
     {
+        // ReSharper disable once UnusedParameter.Local
         static void Main(string[] args)
         {
             var connectionString = ConfigurationManager.ConnectionStrings["RabbitMQ"].ConnectionString;
