@@ -12,7 +12,7 @@ namespace RabbitMQReprocessDeadLetter
         private readonly IModel _model;
         private readonly string _deadLetterQueueName;
         private const ushort FetchSize = 10;
-        private const string ConsumerName = "DeadLettterReprocessor";
+        private const string ConsumerName = "DeadLetterReprocessor";
 
         public RabbitReprocessor(IConnection rabbitConnection, string deadLetterQueueName)
         {
