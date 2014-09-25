@@ -42,12 +42,9 @@ namespace RabbitMQReprocessDeadLetter
                 var queueAsByteArray = (byte[])prop["queue"];
                 var queueName = queueAsByteArray.ConvertToString();
                 var data = e.Body;
-                try
-                {
-                    Console.WriteLine("{0} => {1}", queueName, data.Deserialize<long>());
-                }
-                // ReSharper disable once EmptyGeneralCatchClause
-                catch { }
+
+                Console.WriteLine("{0} => {1}", queueName, e.DeliveryTag);
+                
                 SendMessageToQueue(queueName, data);
                 _model.BasicAck(e.DeliveryTag, false);
             }
