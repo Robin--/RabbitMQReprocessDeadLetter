@@ -38,8 +38,8 @@ namespace RabbitMQReprocessDeadLetter
 
                 var e = queueingBasicConsumer.Queue.Dequeue(); // blocking call
                 var deathProperties = (List<object>) e.BasicProperties.Headers["x-death"];
-                var prop = (Dictionary<string, object>)deathProperties.Single();
-                var queueAsByteArray = (byte[])prop["queue"];
+                var last = (Dictionary<string, object>)deathProperties.Last();//the last item in the list is the first x-death written
+                var queueAsByteArray = (byte[])last["queue"];
                 var queueName = queueAsByteArray.ConvertToString();
                 var data = e.Body;
 
